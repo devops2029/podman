@@ -1,0 +1,21 @@
+
+If you’d prefer to set up that local repository using SSL, here are the extra steps you must take.
+
+you must deploy the secure container registry with the following commands:
+
+export REG_DOMAIN="YOURDOMAIN"
+podman run --privileged -d --name registry -p 5000:5000 -v /var/lib/registry:/var/lib/registry -v /etc/letsencrypt/live/${REG_DOMAIN}/fullchain.pem:/certs/fullchain.pem -v /etc/letsencrypt/live/${REG_DOMAIN}/privkey.pem:/certs/privkey.pem -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/fullchain.pem -e REGISTRY_HTTP_TLS_KEY=/certs/privkey.pem registry:2
+
+Where YOURDOMAIN is the domain associated with the server.
+
+Finally, edit the registries.conf file to include your SSL-enabled registry. Open that file and edit the [registries.insecure] entry to look like:
+
+registries = ['localhost:5000', 'YOURDOMAIN:5000']
+
+Where YOURDOMAIN is the domain associated with the server.
+
+Save and close the file. Restart Podman with the command:
+
+sudo systemctl restart podman
+
+And that’s it, your local registries are ready to be used. Push and pull your images to and from that registry and enjoy.
