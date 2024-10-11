@@ -1,0 +1,41 @@
+How to set up a local image repository with Podman
+
+How to create a local registry
+The first thing you must do is define your local registry. To do that, you must first create a directory to house container data with the command:
+sudo mkdir -p /var/lib/registry
+
+Next, we need to deploy the local registry with the command:
+sudo podman run --privileged -d --name registry -p 5000:5000 -v /var/lib/registry:/var/lib/registry --restart=always registry:2
+
+Now we need to define the insecure registry. To do that, open the necessary configuration file with the command:
+sudo nano /etc/containers/registries.conf
+
+In that file, look for the [registries.insecure] block. In that section you’ll see the line:
+registries = []
+
+Change the above line to:
+
+registries = ['localhost:5000']
+
+Save and close the file. Restart Podman with the command:
+
+sudo systemctl restart podman
+
+How to push an image to the local registry
+Now that your local registry is up and running, it’s time to push an image to it. For testing, we’re going to pull down the hello-world image from the official docker.io repository and then push it to our new local repository.
+
+First, pull down the hello-world image with the command:
+
+podman pull hello-world
+
+After that pull completes, you’ll then need to tag the image such that it can be pushed to the local repository. Tag the image with the command:
+
+podman tag docker.io/library/hello-world localhost:5000/hello-world
+
+Now that our image has been tagged, we can then push it to the local repository with the command:
+
+podman push localhost:5000/hello-world
+
+To ensure your image was pushed to the local repository, issue the command:
+
+podman images
